@@ -1,0 +1,27 @@
+#include <Servo.h>
+#include <WebServer.h>
+
+const int servoPin = 9;
+Servo myservo;
+
+void setup() {
+  myservo.attach(servoPin);
+  Serial.begin(9600);
+
+  // Serial.println("90 degrees");
+  // myservo.write(90);
+}
+
+void loop() {
+  Serial.println("0 degrees");
+  myservo.write(0);
+  delay(1000);
+
+  Serial.println("90 degrees");
+  myservo.write(90);
+  delay(1000);
+
+  Serial.println("180 degrees");
+  myservo.write(180);
+  delay(1000);
+}
