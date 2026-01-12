@@ -1,0 +1,208 @@
+#include <Servo.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// Pin Definitions
+const int trigPin = 10; // Digital pin for the trigger of ultrasonic sensor
+const int echoPin = 12; // Digital pin for the echo of ultrasonic sensor
+const int buzzerPin = 8;
+const int servoPin = 9;
+const int gasSensorPin = A0; // Analog pin for gas sensor
+
+// Motor Driver Pins (for L298N Motor Driver)
+const int motor1A = 2;  // Motor 1: Input 1
+const int motor1B = 3;  // Motor 1: Input 2
+const int motor2A = 4;  // Motor 2: Input 1
+const int motor2B = 7;  // Motor 2: Input 2
+const int enA = 6;      // Enable pin for Motor A
+const int enB = 5;      // Enable pin for Motor B
+
+// Global Objects
+Servo myservo;
+LiquidCrystal_I2C lcd(0x27, 16, 2); 
+
+bool gasDetected = false;
+int speed = 100; // Default speed (range: 0-255)
+
+void setup() {
+  // Set motor pins as outputs
+  pinMode(motor1A, OUTPUT);
+  pinMode(motor1B, OUTPUT);
+  pinMode(motor2A, OUTPUT);
+  pinMode(motor2B, OUTPUT);
+  pinMode(enA, OUTPUT);
+  pinMode(enB, OUTPUT);
+
+  // Set sensor pins
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(gasSensorPin, INPUT);
+  pinMode(buzzerPin, OUTPUT);
+
+  // Initialize servo
+  myservo.attach(servoPin);
+  myservo.write(90); // Center the servo
+
+  // Initialize serial communication
+  Serial.begin(9600);
+
+  // Initialize LCD
+  lcd.init();
+  lcd.backlight();
+  lcd.print("Initializing...");
+  delay(2000); // Wait for initialization
+  lcd.clear();
+  lcd.print("System Ready!");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop() {
+  // Measure distance
+  long distance = measureDistance();
+
+  // Measure gas level
+  int gasLevel = analogRead(gasSensorPin);
+
+  if (gasLevel > 300) { 
+    if (!gasDetected) {
+      gasDetected = true;
+      digitalWrite(buzzerPin, HIGH);
+      lcd.clear();
+      lcd.print("Gas Detected!");
+      Serial.println("Gas leakage detected! Moving towards gas.");
+      delay(1000); // Brief pause before moving
+    }
+
+    // Check for obstacles while moving toward gas
+    if (distance < 25) {
+      stopMotors(); // Obstacle is detected, stop the motors
+      Serial.println("Obstacle detected while moving to gas, avoiding...");
+
+      // Use servo to check left and right for alternative paths
+      checkAndMove();
+    } else {
+      moveForward(); // If no obstacle, move forward towards the gas
+      Serial.println("Moving towards gas...");
+    }
+
+  } else {
+    // If gas level drops, stop the robot and resume normal operation
+    if (gasDetected) {
+      gasDetected = false;
+      stopMotors();
+      digitalWrite(buzzerPin, LOW);
+      lcd.clear();
+      lcd.print("Gas Level Normal");
+      Serial.println("Gas level reduced. Resuming normal movement.");
+      delay(1000);
+      lcd.clear();
+    }
+
+    // Continue normal obstacle avoidance when no gas is detected
+    if (distance < 25) {
+      stopMotors();
+      Serial.println("Obstacle detected, avoiding...");
+      checkAndMove();
+    } else {
+      moveForward();
+      Serial.println("Moving forward normally...");
+    }
+  }
+
+  delay(100); // Reduced delay for quicker response
+}
+
+void checkAndMove() {
+  // Check left
+  myservo.write(0);
+  delay(500);
+  long leftDistance = measureDistance();
+
+  // Check right
+  myservo.write(180);
+  delay(500);
+  long rightDistance = measureDistance();
+
+  // Center the servo back
+  myservo.write(90);
+  delay(500);
+
+  // Decide direction based on distance measurements
+  if (leftDistance > rightDistance && leftDistance > 20) {
+    moveLeft();
+    delay(1000);
+  } else if (rightDistance > leftDistance && rightDistance > 20) {
+    moveRight();
+    delay(1000);
+  } else {
+    // No clear path, stop
+    stopMotors();
+    Serial.println("No clear path detected, stopping.");
+  }
+
+  // Move forward again after turning
+  moveForward();
+}
+
+long measureDistance() {
+  long duration, distance;
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration / 2) / 29.1;
+  return distance;
+}
+
+void moveForward() {
+  analogWrite(enA, 255);
+  analogWrite(enB, 255);
+  digitalWrite(motor1A, HIGH);
+  digitalWrite(motor1B, LOW);
+  digitalWrite(motor2A, HIGH);
+  digitalWrite(motor2B, LOW);
+}
+
+void moveLeft() {
+  analogWrite(enA, 150);
+  analogWrite(enB, 150);
+  digitalWrite(motor1A, LOW);
+  digitalWrite(motor1B, HIGH);
+  digitalWrite(motor2A, HIGH);
+  digitalWrite(motor2B, LOW);
+}
+
+void moveRight() {
+  analogWrite(enA, 150);
+  analogWrite(enB, 150);
+  digitalWrite(motor1A, HIGH);
+  digitalWrite(motor1B, LOW);
+  digitalWrite(motor2A, LOW);
+  digitalWrite(motor2B, HIGH);
+}
+
+void stopMotors() {
+  analogWrite(enA, 0);
+  analogWrite(enB, 0);
+  digitalWrite(motor1A, LOW);
+  digitalWrite(motor1B, LOW);
+  digitalWrite(motor2A, LOW);
+  digitalWrite(motor2B, LOW);
+}
+
+void moveTowardsGas(int gasLevel) {
+  lcd.clear();
+  lcd.print("Gas Level: ");
+  lcd.print(gasLevel);
+
+  if (gasLevel > 600) { // Higher threshold to move forward
+    moveForward();
+  } else if (gasLevel > 400) { // Medium threshold to move left
+    moveLeft();
+  } else { // Lower threshold to move right
+    moveRight();
+  }
+}
