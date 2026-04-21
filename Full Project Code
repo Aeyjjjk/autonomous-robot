@@ -9,7 +9,7 @@ const int gasSensorPin = A0;
 const int buzzerPin = 8;
 const int servoPin = 9;
 
-// Motor Driver Pins (for L298N Motor Driver)
+// Motor Pins (for L298N Motor Driver)
 const int motor1A = 2;  // Motor 1: Input 1
 const int motor1B = 3;  // Motor 1: Input 2
 const int motor2A = 4;  // Motor 2: Input 1
