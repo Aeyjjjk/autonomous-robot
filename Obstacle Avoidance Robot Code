@@ -1,4 +1,4 @@
-#include <Servo.h>          //standard library for the servo
+#include <Servo.h>          //download the standard library for the servo
 #include <NewPing.h>        //for the Ultrasonic sensor function library.
 
 //L298N motor control pins
