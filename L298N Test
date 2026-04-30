@@ -33,7 +33,7 @@ void loop() {
   moveBackward();
   delay(2000);
 
-  Serial.println("stopping");
+  Serial.println("Stopping");
   stopMotors();
   delay(2000);
 }
