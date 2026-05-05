@@ -20,7 +20,7 @@ void loop() {
   Serial.println("90 degrees");
   myservo.write(90);
   delay(1000);
-
+  //
   Serial.println("180 degrees");
   myservo.write(180);
   delay(1000);
