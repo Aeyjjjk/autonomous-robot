@@ -29,7 +29,7 @@ void setup(){
   pinMode(enA, OUTPUT);
   pinMode(enB, OUTPUT);
   
-  servo_motor.attach(9); //our servo pin
+  servo_motor.attach(9); //your servo pin
 
   servo_motor.write(115);
   delay(2000);
