@@ -13,9 +13,9 @@ void setup() {
 }
 
 void loop() {
- // Serial.println("0 degrees");
+ //Serial.println("0 degrees");
   myservo.write(0);
-  delay(1000);
+  delay(4000);
 
  //Serial.println("90 degrees");
   myservo.write(90);
