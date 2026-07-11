@@ -49,7 +49,7 @@ void loop(){
   int distanceLeft = 0;
   delay(50);
   
-  if (distance <= 30){
+  if (distance <= 35){
     moveStop();
     delay(300);
     moveBackward();
