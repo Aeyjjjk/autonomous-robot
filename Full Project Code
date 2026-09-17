@@ -56,7 +56,7 @@ void setup() {
   delay(2000); // Wait for initialization
   lcd.clear();
   lcd.print("System Ready");
-  delay(1000);
+  delay(2000);
   lcd.clear();
 }
 
