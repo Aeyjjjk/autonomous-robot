@@ -34,7 +34,7 @@ void loop() {
 
   Serial.println("Stopping");
   stopMotors();
-  delay(3000);
+  delay(4000);
 }
 
 void moveForward() {
