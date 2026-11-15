@@ -26,7 +26,7 @@ void setup() {
 void loop() {
   Serial.println("moving forward");
   moveForward();
-  delay(3000);
+  delay(4000);
 
   Serial.println("moving Backward");//shows on the ide
   moveBackward();
